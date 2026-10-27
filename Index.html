@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b5e20">
+<title>Campo Verde · Análisis estadístico</title>
+<style>
+:root{
+  --verde:#2e7d32; --verde2:#1b5e20; --verde-claro:#e8f3e8; --crema:#faf8f0;
+  --texto:#1f2a1f; --gris:#6b756b; --borde:#dfe5d8; --ambar:#f2a900; --rojo:#c62828;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--crema);color:var(--texto);line-height:1.45}
+.top{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--verde2),var(--verde));color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.brand{display:flex;gap:12px;align-items:center;padding:12px 16px}
+.logo{width:42px;height:42px;border-radius:12px;background:#fff;color:var(--verde2);display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.5px;flex:none;border:3px solid var(--ambar)}
+.brand h1{margin:0;font-size:1.1rem;line-height:1.2}
+.brand p{margin:2px 0 0;font-size:.82rem;opacity:.9}
+nav{display:flex;background:#fff;border-bottom:1px solid var(--borde);overflow-x:auto}
+nav button{flex:1 0 auto;padding:12px 10px;border:0;background:none;font:inherit;font-weight:600;font-size:.9rem;color:var(--gris);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--verde2);border-bottom-color:var(--ambar)}
+main{max-width:980px;margin:0 auto;padding:16px}
+.sec{display:none}
+.sec.on{display:block}
+.card{background:#fff;border:1px solid var(--borde);border-radius:14px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 10px;font-size:1.05rem;color:var(--verde2)}
+.card h3{margin:14px 0 6px;font-size:.98rem}
+.muted{color:var(--gris);font-size:.88rem;margin:4px 0 10px}
+.form{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+label{font-size:.82rem;font-weight:600;color:var(--gris);display:flex;flex-direction:column;gap:4px}
+input,select,textarea{font:inherit;font-size:16px;padding:10px;border:1px solid var(--borde);border-radius:10px;background:#fff;color:var(--texto);width:100%}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;resize:vertical;margin:6px 0 10px}
+.chk{flex-direction:row;align-items:flex-start;gap:8px;font-weight:400;color:var(--texto);margin-top:12px;font-size:.88rem}
+.chk input{width:auto;margin-top:3px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.btn{display:inline-block;padding:10px 16px;border:1px solid var(--verde);border-radius:10px;background:var(--verde);color:#fff;font:inherit;font-weight:600;font-size:.92rem;cursor:pointer;text-align:center;width:auto}
+.btn.sec{background:#fff;color:var(--verde2)}
+.btn.danger{color:var(--rojo);border-color:var(--rojo)}
+.alert{padding:10px 12px;border-radius:10px;margin:10px 0;font-size:.9rem;background:#eef5ee;border-left:4px solid var(--verde)}
+.alert.warn{background:#fff6e0;border-left-color:var(--ambar)}
+.alert.bad{background:#fdecea;border-left-color:var(--rojo)}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.kpi{background:var(--verde-claro);border-radius:12px;padding:10px 12px}
+.kpi small{display:block;color:var(--gris);font-size:.78rem}
+.kpi b{display:block;font-size:1.25rem;color:var(--verde2);word-break:break-word}
+.kpi span{display:block;font-size:.76rem;color:var(--gris)}
+.kpi.warn{background:#fff3d6}.kpi.warn b{color:#8a5a00}
+.kpi.bad{background:#fdecea}.kpi.bad b{color:var(--rojo)}
+.kpi.good{background:#e3f4e3}
+.grid.wide{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.kpi .expl{margin:6px 0 0;font-size:.84rem;color:var(--texto);line-height:1.35}
+td.num,th.num{text-align:right}
+td.good{color:var(--verde2);font-weight:600}
+.tablewrap{overflow:auto;max-height:380px;border:1px solid var(--borde);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--borde);white-space:nowrap}
+th{position:sticky;top:0;background:var(--verde-claro);z-index:1}
+td.idx{color:var(--gris)}
+th.sel,td.sel{background:#f1f8e9}
+td.bad{color:var(--rojo);font-weight:700}
+ul,ol{margin:6px 0;padding-left:22px}
+li{margin:4px 0}
+.cwrap{width:100%}
+canvas{display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--gris);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.alt{border:1px solid var(--borde);border-left:5px solid var(--ambar);border-radius:12px;padding:10px 14px;margin:10px 0;background:#fffdf5}
+.alt h3{margin:0 0 4px}
+.alt p{margin:4px 0}
+footer{text-align:center;color:var(--gris);font-size:.78rem;padding:8px 16px 28px}
+@media (max-width:480px){
+  main{padding:12px}
+  .card{padding:14px}
+  .btn{flex:1 1 auto}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo">CV</div>
+    <div>
+      <h1 id="hEmpresa">Lácteos Campo Verde S.A.S.</h1>
+      <p id="hSub">Análisis estadístico</p>
+    </div>
+  </div>
+  <nav id="menu" aria-label="Secciones">
+    <button data-sec="datos" class="on">Datos</button>
+    <button data-sec="estadistica">Estadística</button>
+    <button data-sec="graficos">Gráficos</button>
+    <button data-sec="recomendaciones">Recomendaciones</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ DATOS ============ -->
+  <section id="datos" class="sec on">
+    <div class="card">
+      <h2>Datos de la empresa y del proceso</h2>
+      <div class="form">
+        <label>Empresa<input id="cfgEmpresa"></label>
+        <label>Sector<input id="cfgSector"></label>
+        <label>Proceso<input id="cfgProceso"></label>
+        <label>Variable<input id="cfgVariable"></label>
+        <label>Unidad<input id="cfgUnidad" placeholder="%"></label>
+        <label>¿Qué es mejor?
+          <select id="cfgMejor"><option value="menor">Menor valor</option><option value="mayor">Mayor valor</option></select>
+        </label>
+        <label>Límite de especificación<input id="cfgLimite" inputmode="decimal"></label>
+        <label>Meta de la empresa<input id="cfgMeta" inputmode="decimal"></label>
+        <label>Registros esperados<input id="cfgNEsp" inputmode="numeric"></label>
+      </div>
+      <label class="chk"><input type="checkbox" id="cfgExcluir"> Excluir del análisis los valores imposibles (por ejemplo, negativos o mayores de 100 cuando la unidad es %)</label>
+    </div>
+
+    <div class="card">
+      <h2>Tus datos</h2>
+      <p class="muted">Carga un archivo CSV o pega los datos aquí. Puedes tener una sola columna o varias (por ejemplo, <code>lote,merma_pct</code>). Separadores admitidos: coma, punto y coma o tabulador. Si usas coma decimal, separa las columnas con punto y coma (;).</p>
+      <div class="row">
+        <label class="btn sec" for="file">Cargar archivo…</label>
+        <input type="file" id="file" accept=".csv,.txt,.tsv,text/csv,text/plain" hidden>
+        <button class="btn sec" id="btnEjemplo" type="button">Cargar ejemplo</button>
+        <button class="btn sec danger" id="btnBorrar" type="button">Borrar datos</button>
+      </div>
+      <textarea id="txt" rows="6" placeholder="lote,merma_pct&#10;1,2.1&#10;2,2.4&#10;3,1.9"></textarea>
+      <button class="btn" id="btnUsar" type="button">Usar estos datos</button>
+      <div id="info"></div>
+    </div>
+
+    <div class="card">
+      <h2>Vista de la tabla</h2>
+      <label>Columna que se analiza<select id="selCol"></select></label>
+      <div style="height:10px"></div>
+      <div class="tablewrap" id="tabla"></div>
+    </div>
+  </section>
+
+  <!-- ============ ESTADÍSTICA ============ -->
+  <section id="estadistica" class="sec">
+    <div id="estOut"></div>
+  </section>
+
+  <!-- ============ GRÁFICOS ============ -->
+  <section id="graficos" class="sec">
+    <div id="grafBiz" class="card" style="display:none">
+      <h2>Gráficos</h2>
+      <p>Los gráficos de esta sección (histograma y gráfico de control) están pensados para la merma por lote. Con datos de ventas y costos por mes, los resultados están en <b>Estadística</b>.</p>
+      <button class="btn" data-go="estadistica" type="button">Ir a Estadística</button>
+    </div>
+    <div id="grafMerma">
+    <div class="card">
+      <h2>Histograma</h2>
+      <div class="cwrap"><canvas id="cHist"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#4caf50"></i>Dentro del límite</span>
+        <span><i style="background:#e57373"></i>Fuera del límite</span>
+        <span><i style="background:#2e7d32"></i>Meta</span>
+        <span><i style="background:#c62828"></i>Límite</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Gráfico de control (lotes en el orden en que se tomaron)</h2>
+      <div class="cwrap"><canvas id="cCtrl"></canvas></div>
+      <div class="legend">
+        <span><i style="background:#2e7d32"></i>Lote normal</span>
+        <span><i style="background:#f2a900"></i>Sobre el límite</span>
+        <span><i style="background:#c62828"></i>Lote extremo (atípico)</span>
+        <span><i style="background:#6b756b"></i>Promedio</span>
+      </div>
+      <p class="muted">Si los puntos rojos aparecen juntos, la causa suele estar en un periodo (un turno, un proveedor, una falla). Si están dispersos, suelen ser causas ocasionales.</p>
+    </div>
+    </div>
+  </section>
+
+  <!-- ============ RECOMENDACIONES ============ -->
+  <section id="recomendaciones" class="sec">
+    <div id="recOut"></div>
+    <div class="row"><button class="btn sec" id="btnCopiar" type="button">Copiar recomendaciones</button></div>
+  </section>
+</main>
+<footer>Tus datos se guardan solo en este navegador (localStorage). No se envían a ningún servidor.</footer>
+
+<script>
+(function(){
+'use strict';
+
+var KEY = 'cv_app_v1';
+var DEF = {
+  empresa:'Lácteos Campo Verde S.A.S.', sector:'Alimentos', proceso:'Pasteurización de leche por lotes',
+  variable:'Merma por lote', unidad:'%', mejor:'menor', limite:'4', meta:'2.5', nEsp:'40', excluir:false
+};
+var state = { cfg:Object.assign({}, DEF), raw:'', col:-1 };
+var parsed = { headers:[], rows:[], numCols:[], delim:null };
+
+var EJEMPLO_VALORES = [2.1,2.4,1.9,2.8,2.2,3.0,2.5,2.3,1.8,2.6,2.9,2.0,2.7,3.1,2.4,2.2,7.8,2.5,2.3,2.1,
+                       2.8,1.9,2.6,2.4,3.2,2.2,2.0,8.9,2.7,2.5,2.3,2.9,2.1,6.4,2.4,2.6,2.2,2.8,9.6,2.3];
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function num(s){
+  if (typeof s === 'number') return s;
+  if (s == null) return NaN;
+  var t = String(s).replace(/\s/g,'').replace(',', '.');
+  return t === '' ? NaN : Number(t);
+}
+function fmt(x, d){
+  if (!isFinite(x)) return '—';
+  if (d == null) d = 2;
+  try { return x.toLocaleString('es-CO', {maximumFractionDigits:d}); }
+  catch(e){ var p = Math.pow(10,d); return String(Math.round(x*p)/p); }
+}
+function fu(x, d){
+  if (!isFinite(x)) return '—';
+  var u = String(state.cfg.unidad || '').trim();
+  return fmt(x, d) + (u ? (u === '%' ? '%' : ' ' + u) : '');
+}
+
+/* ---------- guardado ---------- */
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+function load(){
+  try {
+    var s = JSON.parse(localStorage.getItem(KEY));
+    if (s) {
+      state.cfg = Object.assign({}, DEF, s.cfg || {});
+      state.raw = s.raw || '';
+      state.col = (typeof s.col === 'number') ? s.col : -1;
+    }
+  } catch(e){}
+}
+
+/* ---------- lectura de CSV ---------- */
+function cellNum(c, delim){
+  var t = String(c == null ? '' : c).replace(/%/g,'').replace(/\s/g,'');
+  if (delim !== ',') t = t.replace(',', '.');
+  if (t === '') return NaN;
+  return Number(t);
+}
+function parseCSV(text){
+  var res = { headers:[], rows:[], numCols:[], delim:null };
+  var lines = String(text || '').replace(/\r/g,'').split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length; });
+  if (!lines.length) return res;
+  var first = lines[0], best = null, bc = 0;
+  [';','\t',','].forEach(function(d){ var c = first.split(d).length - 1; if (c > bc) { bc = c; best = d; } });
+  // Una sola columna con coma decimal (2,1 / 2,4 ...), sin encabezado: no es una tabla de dos columnas
+  if (best === ',' && lines.every(function(l){ return /^-?\d+,\d+$/.test(l); })) best = null;
+  res.delim = best;
+  var cells = lines.map(function(l){
+    return (best ? l.split(best) : [l]).map(function(c){ return c.trim().replace(/^"|"$/g,''); });
+  });
+  var hasHeader = cells[0].some(function(c){ return c !== '' && !isFinite(cellNum(c, best)); });
+  var head = hasHeader ? cells.shift() : null;
+  var nc = cells.reduce(function(m,r){ return Math.max(m, r.length); }, head ? head.length : 0);
+  var hh = [];
+  for (var j = 0; j < nc; j++) hh.push((head && head[j]) ? head[j] : (nc === 1 ? 'Valor' : 'Columna ' + (j+1)));
+  res.headers = hh;
+  res.rows = cells;
+  for (var k = 0; k < nc; k++) {
+    var cnt = 0;
+    cells.forEach(function(r){ if (isFinite(cellNum(r[k], best)) && String(r[k] == null ? '' : r[k]).trim() !== '') cnt++; });
+    if (cells.length && cnt >= 0.8 * cells.length) res.numCols.push(k);
+  }
+  return res;
+}
+function pickCol(){
+  var nc = parsed.numCols;
+  if (!nc.length) return -1;
+  if (nc.indexOf(state.col) >= 0) return state.col;
+  for (var i = 0; i < nc.length; i++) {
+    if (/merma|valor|pct|porc|%/i.test(parsed.headers[nc[i]] || '')) return nc[i];
+  }
+  return nc[nc.length - 1];
+}
+function isInvalid(v){
+  var u = String(state.cfg.unidad || '');
+  return u.indexOf('%') >= 0 && (v < 0 || v > 100);
+}
+function getData(){
+  var out = { items:[], invalid:[], nonNum:0, total:parsed.rows.length };
+  var c = state.col;
+  if (c < 0) return out;
+  parsed.rows.forEach(function(r, idx){
+    var raw = (r[c] == null ? '' : r[c]);
+    var v = cellNum(raw, parsed.delim);
+    if (!isFinite(v) || String(raw).trim() === '') { out.nonNum++; return; }
+    var bad = isInvalid(v);
+    if (bad) out.invalid.push({ v:v, i:idx+1 });
+    if (bad && state.cfg.excluir) return;
+    out.items.push({ v:v, i:idx+1 });
+  });
+  return out;
+}
+
+/* ---------- estadística ---------- */
+function quant(s, p){
+  var pos = (s.length - 1) * p, lo = Math.floor(pos), hi = Math.ceil(pos);
+  return s[lo] + (s[hi] - s[lo]) * (pos - lo);
+}
+function stats(a){
+  var n = a.length, s = a.slice().sort(function(x,y){ return x - y; });
+  var sum = s.reduce(function(t,x){ return t + x; }, 0), m = sum / n;
+  var ss = s.reduce(function(t,x){ return t + (x-m)*(x-m); }, 0);
+  var sd = n > 1 ? Math.sqrt(ss/(n-1)) : 0;
+  var q1 = quant(s,0.25), med = quant(s,0.5), q3 = quant(s,0.75), iqr = q3 - q1;
+  var sk = (n > 2 && sd > 0) ? n/((n-1)*(n-2)) * s.reduce(function(t,x){ return t + Math.pow((x-m)/sd, 3); }, 0) : 0;
+  var freq = {}, mx = 0;
+  s.forEach(function(x){ var k = String(x); freq[k] = (freq[k]||0) + 1; if (freq[k] > mx) mx = freq[k]; });
+  var moda = null;
+  if (mx > 1) { for (var i = 0; i < n; i++) { if (freq[String(s[i])] === mx) { moda = s[i]; break; } } }
+  return { n:n, s:s, sum:sum, mean:m, sd:sd, cv:(m !== 0 ? sd/Math.abs(m)*100 : NaN),
+           min:s[0], max:s[n-1], q1:q1, med:med, q3:q3, iqr:iqr, lo:q1-1.5*iqr, hi:q3+1.5*iqr, sk:sk, moda:moda };
+}
+function kpi(l, v, h, cls){
+  return '<div class="kpi' + (cls ? ' ' + cls : '') + '"><small>' + l + '</small><b>' + v + '</b>' + (h ? '<span>' + h + '</span>' : '') + '</div>';
+}
+function emptyMsg(){
+  return '<div class="card"><p>Aún no hay datos válidos para analizar. Ve a <b>Datos</b>, carga tu CSV o usa el ejemplo.</p>' +
+         '<button class="btn" data-go="datos" type="button">Ir a Datos</button></div>';
+}
+function alertInvalid(d){
+  var ej = d.invalid.slice(0,5).map(function(x){ return fmt(x.v); }).join(', ');
+  return '<div class="alert bad"><b>' + d.invalid.length + ' valor(es) imposible(s)</b> para una variable en ' + esc(state.cfg.unidad || 'esa unidad') +
+         ' (ejemplos: ' + ej + '). ' + (state.cfg.excluir ? 'Ya están excluidos del análisis.' : 'Siguen dentro del análisis y distorsionan los resultados: revisa el archivo o marca la casilla para excluirlos.') + '</div>';
+}
+function split(d, S){
+  var outs = d.items.filter(function(it){ return it.v < S.lo || it.v > S.hi; });
+  var clean = d.items.filter(function(it){ return it.v >= S.lo && it.v <= S.hi; }).map(function(it){ return it.v; });
+  var mc = clean.length ? clean.reduce(function(t,x){ return t + x; }, 0) / clean.length : NaN;
+  return { outs:outs, clean:clean, meanClean:mc };
+}
+
+/* ---------- modo negocio: ventas y costos por mes ---------- */
+var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var T_CRIT = [12.706,4.303,3.182,2.776,2.571,2.447,2.365,2.306,2.262,2.228,2.201,2.179,2.160,2.145,2.131,2.120,2.110,2.101,2.093,2.086,2.080,2.074,2.069,2.064,2.060,2.056,2.052,2.048,2.045,2.042];
+function fmtMes(s){
+  var m = /^(\d{4})-(\d{1,2})/.exec(String(s));
+  if (m) { var i = parseInt(m[2], 10) - 1; if (i >= 0 && i < 12) return MESES[i] + ' ' + m[1]; }
+  return String(s);
+}
+function normH(s){
+  var t = String(s || '').toLowerCase();
+  try { t = t.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch(e){}
+  return t.replace(/[^a-z0-9]+/g, '_');
+}
+function findCol(re){
+  for (var j = 0; j < parsed.headers.length; j++) {
+    if (re.test(normH(parsed.headers[j])) && parsed.numCols.indexOf(j) >= 0) return j;
+  }
+  return -1;
+}
+function detectBusiness(){
+  if (!parsed.rows.length) return null;
+  var cv = findCol(/venta/), cc = findCol(/costo/);
+  if (cv < 0 || cc < 0) return null;
+  var cg = findCol(/gasto/), cn = findCol(/nuevo/), cm = -1;
+  parsed.headers.forEach(function(h, j){ if (cm < 0 && /^(mes|fecha|periodo)/.test(normH(h))) cm = j; });
+  var B = { mes:[], ventas:[], costos:[], gastos:[], nuevos:[], hasG:cg >= 0, hasN:cn >= 0 };
+  parsed.rows.forEach(function(r, i){
+    var v = cellNum(r[cv], parsed.delim), c = cellNum(r[cc], parsed.delim);
+    if (!isFinite(v) || !isFinite(c)) return;
+    var g = cg >= 0 ? cellNum(r[cg], parsed.delim) : 0;
+    B.mes.push(cm >= 0 ? fmtMes(r[cm]) : 'Mes ' + (i + 1));
+    B.ventas.push(v); B.costos.push(c); B.gastos.push(isFinite(g) ? g : 0);
+    B.nuevos.push(cn >= 0 ? cellNum(r[cn], parsed.delim) : NaN);
+  });
+  return B.ventas.length >= 3 ? B : null;
+}
+function avg(a){ return a.length ? a.reduce(function(t, x){ return t + x; }, 0) / a.length : NaN; }
+function money(x){ if (!isFinite(x)) return '—'; return Math.abs(x) >= 1e6 ? '$' + fmt(x / 1e6, 1) + ' M' : '$' + fmt(x, 0); }
+function pc(x, d){ return isFinite(x) ? fmt(x, d == null ? 1 : d) + ' %' : '—'; }
+function sg(x, d){ return (x > 0 ? '+' : '') + pc(x, d); }
+function growth(a){
+  var g = [];
+  for (var i = 1; i < a.length; i++) g.push(a[i - 1] !== 0 ? (a[i] - a[i - 1]) / Math.abs(a[i - 1]) * 100 : NaN);
+  return g;
+}
+function pearson(x, y){
+  var n = x.length, mx = avg(x), my = avg(y), sxy = 0, sxx = 0, syy = 0;
+  for (var i = 0; i < n; i++) { sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) * (x[i] - mx); syy += (y[i] - my) * (y[i] - my); }
+  return (sxx > 0 && syy > 0) ? sxy / Math.sqrt(sxx * syy) : NaN;
+}
+function bcard(label, value, phrase, cls){
+  return '<div class="kpi' + (cls ? ' ' + cls : '') + '"><small>' + label + '</small><b>' + value + '</b><p class="expl">' + phrase + '</p></div>';
+}
+function descBlock(title, arr, B, isV){
+  var S = stats(arr), imin = arr.indexOf(S.min), imax = arr.indexOf(S.max);
+  var sep = S.mean !== 0 && Math.abs(S.mean - S.med) / Math.abs(S.mean) > 0.05;
+  var cvTxt = S.cv < 10 ? 'Es una variación baja: ' + (isV ? 'ventas muy estables.' : 'costos muy estables.')
+            : S.cv <= 25 ? 'Es una variación moderada, normal cuando hay temporadas buenas y malas.'
+            : 'Es una variación alta: ' + (isV ? 'las ventas cambian mucho de un mes a otro.' : 'los costos cambian mucho de un mes a otro.');
+  return '<div class="card"><h2>' + title + '</h2><div class="grid wide">' +
+    bcard('Media', money(S.mean), isV ? 'En un mes típico vendes cerca de ' + money(S.mean) + '.' : 'En un mes típico tus costos son de cerca de ' + money(S.mean) + '.') +
+    bcard('Mediana', money(S.med), (isV ? 'La mitad de los meses vendiste más de ' + money(S.med) + ' y la otra mitad menos.' : 'La mitad de los meses tus costos fueron mayores a ' + money(S.med) + ' y la otra mitad menores.') +
+          (sep ? ' Como se separa de la media, hay meses muy altos o muy bajos que mueven el promedio.' : '')) +
+    bcard('Desviación estándar', money(S.sd), 'Cada mes se aleja en promedio unos ' + money(S.sd) + ' del promedio (' + fmt(S.cv, 1) + ' %). ' + cvTxt) +
+    bcard('Mínimo', money(S.min), isV ? 'El mes más flojo fue ' + B.mes[imin] + '.' : 'El mes con costos más bajos fue ' + B.mes[imin] + '.') +
+    bcard('Máximo', money(S.max), isV ? 'El mejor mes fue ' + B.mes[imax] + '.' : 'El mes con costos más altos fue ' + B.mes[imax] + ': revisa qué lo causó.') +
+    '</div></div>';
+}
+function atipicos(arr, labels){
+  if (arr.length < 4) return [];
+  var S = stats(arr), res = [];
+  var mad = stats(arr.map(function(x){ return Math.abs(x - S.med); })).med;
+  arr.forEach(function(v, i){
+    var z = mad > 0 ? 0.6745 * (v - S.med) / mad : (v - S.mean);
+    var flag = mad > 0 ? Math.abs(z) > 3.5 : (v < S.lo || v > S.hi);
+    if (flag) res.push({ mes:labels[i], v:v, z:z });
+  });
+  return res;
+}
+function atipCard(label, arr, labels, fm){
+  var a = atipicos(arr, labels);
+  if (!a.length) return bcard(label, 'Ninguno', 'Ningún mes se aleja demasiado del resto.', 'good');
+  var lst = a.slice(0, 4).map(function(o){ return o.mes + ' (' + (o.z > 0 ? 'muy alto' : 'muy bajo') + ', ' + fm(o.v) + ')'; }).join('; ');
+  return bcard(label, a.length + (a.length === 1 ? ' mes' : ' meses'), lst + '. Revisa si fue temporada o un hecho puntual (una falla, una promoción, un cambio de precio).', 'warn');
+}
+function renderBusiness(B){
+  var n = B.ventas.length, h = '';
+  var util = B.ventas.map(function(v, i){ return v - B.costos[i] - B.gastos[i]; });
+  var marg = util.map(function(u, i){ return B.ventas[i] > 0 ? u / B.ventas[i] * 100 : NaN; });
+  var mg = marg.filter(isFinite), mAvg = avg(mg);
+  var gv = growth(B.ventas), gc = growth(B.costos);
+  var base = B.hasG ? 'ventas − costos − gastos operativos' : 'ventas − costos';
+
+  h += '<div class="alert"><b>Datos de negocio detectados:</b> ' + n + ' meses (' + B.mes[0] + ' a ' + B.mes[n - 1] + '). Cifras en pesos; «M» significa millones. Debajo de cada resultado hay una frase que lo explica en palabras simples.</div>';
+  h += descBlock('Ventas', B.ventas, B, true);
+  h += descBlock('Costos', B.costos, B, false);
+
+  /* margen */
+  var iMax = marg.indexOf(Math.max.apply(null, mg)), iMin = marg.indexOf(Math.min.apply(null, mg));
+  var sumU = util.reduce(function(t, x){ return t + x; }, 0), sumV = B.ventas.reduce(function(t, x){ return t + x; }, 0);
+  h += '<div class="card"><h2>Margen de utilidad</h2><p class="muted">Utilidad = ' + base + '. Margen = utilidad ÷ ventas.</p><div class="grid wide">';
+  h += bcard('Margen promedio', pc(mAvg), 'De cada $100 que vendes, en un mes típico te quedan cerca de $' + fmt(mAvg, 1) + ' después de ' + (B.hasG ? 'costos y gastos' : 'costos') + '.');
+  h += bcard('Mejor margen', pc(marg[iMax]), 'En ' + B.mes[iMax] + ' fue tu mes más rentable: de cada $100 te quedaron $' + fmt(marg[iMax], 1) + '.', 'good');
+  h += bcard('Peor margen', pc(marg[iMin]), 'En ' + B.mes[iMin] + ' fue tu mes menos rentable: de cada $100 solo te quedaron $' + fmt(marg[iMin], 1) + '.', 'warn');
+  if (n >= 6) {
+    var f3 = avg(marg.slice(0, 3)), l3 = avg(marg.slice(-3)), dl = l3 - f3;
+    h += bcard('Tendencia del margen', (dl > 0 ? '+' : '') + fmt(dl, 1) + ' puntos',
+      'Los últimos 3 meses el margen promedio fue ' + pc(l3) + ' y los primeros 3 fue ' + pc(f3) + ': ' +
+      (dl < -1 ? 'tu rentabilidad está bajando.' : dl > 1 ? 'tu rentabilidad está mejorando.' : 'se mantiene parecida.'), dl < -3 ? 'bad' : dl > 1 ? 'good' : '');
+  }
+  h += bcard('Utilidad total', money(sumU), 'Sumando los ' + n + ' meses te quedaron ' + money(sumU) + ' (margen total de ' + pc(sumV !== 0 ? sumU / sumV * 100 : NaN) + ').');
+  h += '</div></div>';
+
+  /* crecimiento */
+  var aV = avg(gv.filter(isFinite)), aC = avg(gc.filter(isFinite));
+  var iUp = gv.indexOf(Math.max.apply(null, gv.filter(isFinite))), iDn = gv.indexOf(Math.min.apply(null, gv.filter(isFinite)));
+  var totV = B.ventas[0] !== 0 ? (B.ventas[n - 1] - B.ventas[0]) / Math.abs(B.ventas[0]) * 100 : NaN;
+  var totC = B.costos[0] !== 0 ? (B.costos[n - 1] - B.costos[0]) / Math.abs(B.costos[0]) * 100 : NaN;
+  h += '<div class="card"><h2>Crecimiento mes a mes</h2><p class="muted">Cambio porcentual de cada mes frente al mes anterior.</p><div class="grid wide">';
+  h += bcard('Ventas: promedio mensual', sg(aV), 'En promedio tus ventas ' + (aV >= 0 ? 'suben ' : 'bajan ') + fmt(Math.abs(aV), 1) + ' % cada mes (incluye los saltos por temporada).', aV < 0 ? 'warn' : '');
+  h += bcard('Costos: promedio mensual', sg(aC), 'En promedio tus costos ' + (aC >= 0 ? 'suben ' : 'bajan ') + fmt(Math.abs(aC), 1) + ' % cada mes. ' +
+    (aC > aV ? 'Tus costos crecen más rápido que tus ventas: cuidado con el margen.' : 'Tus costos crecen más despacio que tus ventas: buena señal.'), aC > aV ? 'bad' : 'good');
+  if (iUp >= 0) h += bcard('Mayor subida de ventas', sg(gv[iUp]), 'De ' + B.mes[iUp] + ' a ' + B.mes[iUp + 1] + ' las ventas subieron ' + fmt(gv[iUp], 1) + ' %. Revisa si fue temporada o una acción tuya.', 'good');
+  if (iDn >= 0) h += bcard('Mayor caída de ventas', sg(gv[iDn]), 'De ' + B.mes[iDn] + ' a ' + B.mes[iDn + 1] + ' las ventas ' + (gv[iDn] < 0 ? 'cayeron ' + fmt(Math.abs(gv[iDn]), 1) + ' %' : 'subieron solo ' + fmt(gv[iDn], 1) + ' %') + '. Es el mes a vigilar.', gv[iDn] < 0 ? 'warn' : '');
+  h += bcard('Cambio total', sg(totV), 'De ' + B.mes[0] + ' a ' + B.mes[n - 1] + ' las ventas pasaron de ' + money(B.ventas[0]) + ' a ' + money(B.ventas[n - 1]) + ' (' + sg(totV) + ') y los costos cambiaron ' + sg(totC) + '.');
+  h += '</div>';
+  h += '<h3 class="sub">Detalle mes a mes</h3><div class="tablewrap"><table><thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Cambio</th><th class="num">Costos</th><th class="num">Cambio</th><th class="num">Utilidad</th><th class="num">Margen</th></tr></thead><tbody>';
+  for (var i = 0; i < n; i++) {
+    h += '<tr><td>' + esc(B.mes[i]) + '</td><td class="num">' + money(B.ventas[i]) + '</td>' +
+      '<td class="num ' + (i > 0 && gv[i - 1] < 0 ? 'bad' : '') + '">' + (i > 0 ? sg(gv[i - 1]) : '—') + '</td>' +
+      '<td class="num">' + money(B.costos[i]) + '</td>' +
+      '<td class="num ' + (i > 0 && gc[i - 1] > gv[i - 1] ? 'bad' : '') + '">' + (i > 0 ? sg(gc[i - 1]) : '—') + '</td>' +
+      '<td class="num">' + money(util[i]) + '</td>' +
+      '<td class="num ' + (marg[i] < mAvg ? 'bad' : 'good') + '">' + pc(marg[i]) + '</td></tr>';
+  }
+  h += '</tbody></table></div><p class="muted">En rojo: ventas que bajan, costos que suben más que las ventas, y márgenes por debajo del promedio.</p></div>';
+
+  /* correlación */
+  var px = [], py = [];
+  for (var k = 0; k < n; k++) { if (isFinite(B.nuevos[k])) { px.push(B.nuevos[k]); py.push(B.ventas[k]); } }
+  h += '<div class="card"><h2>Clientes nuevos y ventas</h2>';
+  if (!B.hasN || px.length < 3) {
+    h += '<p>No encontré la columna de clientes nuevos (por ejemplo, <code>clientes_nuevos</code>) con al menos 3 datos.</p></div>';
+  } else {
+    var r = pearson(px, py), m = px.length;
+    if (!isFinite(r)) {
+      h += '<p>No se puede calcular la correlación: los valores no cambian de un mes a otro.</p></div>';
+    } else {
+      var ar = Math.abs(r), fuerza = ar < 0.2 ? 'casi nula' : ar < 0.4 ? 'débil' : ar < 0.7 ? 'moderada' : 'fuerte';
+      var df = m - 2, t = ar >= 1 ? Infinity : ar * Math.sqrt(df / (1 - r * r));
+      var crit = df >= 1 ? (df <= 30 ? T_CRIT[df - 1] : 1.96) : Infinity, sig = t > crit;
+      var fr = ar < 0.2 ? 'Casi no hay relación: los clientes nuevos no explican bien las ventas del mes.'
+             : 'Relación ' + fuerza + ' ' + (r > 0 ? 'positiva: cuando llegan más clientes nuevos, las ventas tienden a subir.' : 'negativa: cuando llegan más clientes nuevos, las ventas tienden a bajar.');
+      h += '<div class="grid wide">';
+      h += bcard('Correlación (r)', fmt(r, 2), fr + ' El valor va de −1 a +1; cerca de 0 significa que no hay relación.', ar >= 0.7 ? 'good' : '');
+      h += bcard('Parte que se explica (r²)', pc(r * r * 100, 0), 'Cerca del ' + fmt(r * r * 100, 0) + ' % de los cambios en las ventas va de la mano con los clientes nuevos; el resto depende de otras cosas (precio, temporada, producto).');
+      h += bcard('¿Es una relación confiable?', sig ? 'Sí, clara' : 'No concluyente', 'Con ' + m + ' meses, esta relación ' + (sig ? 'sí' : 'no') + ' es estadísticamente clara (nivel de confianza del 95 %). Que dos cosas suban juntas no prueba que una cause la otra.', sig ? 'good' : 'warn');
+      h += '</div></div>';
+    }
+  }
+
+  /* atípicos */
+  h += '<div class="card"><h2>Meses atípicos</h2><p class="muted">Un mes es atípico si se aleja de la mediana más de 3,5 veces la variación típica de los demás meses (puntaje z modificado, basado en la mediana). Con pocos meses es más confiable que usar el promedio, porque los propios extremos no lo engañan.</p><div class="grid wide">';
+  h += atipCard('Ventas', B.ventas, B.mes, money);
+  h += atipCard('Costos', B.costos, B.mes, money);
+  h += atipCard('Margen de utilidad', marg, B.mes, pc);
+  h += atipCard('Crecimiento de ventas', gv, B.mes.slice(1), sg);
+  h += '</div></div>';
+  return h;
+}
+
+function renderStats(){
+  var el = $('estOut');
+  var biz = detectBusiness();
+  if (biz) { el.innerHTML = renderBusiness(biz); return; }
+  var d = getData();
+  if (d.items.length < 2) { el.innerHTML = emptyMsg(); return; }
+  var c = state.cfg, vals = d.items.map(function(it){ return it.v; }), S = stats(vals);
+  var lim = num(c.limite), meta = num(c.meta), menor = c.mejor !== 'mayor';
+  var sp = split(d, S), outs = sp.outs, h = '';
+  if (d.invalid.length) h += alertInvalid(d);
+
+  h += '<div class="card"><h2>Medidas descriptivas</h2><div class="grid">' +
+    kpi('Registros', fmt(S.n,0)) + kpi('Media', fu(S.mean)) + kpi('Mediana', fu(S.med)) +
+    kpi('Moda', S.moda == null ? 'No hay' : fu(S.moda)) + kpi('Desv. típica (s)', fu(S.sd)) +
+    kpi('CV (%)', fmt(S.cv,1)) + kpi('Mínimo', fu(S.min)) + kpi('Máximo', fu(S.max)) +
+    kpi('Q1', fu(S.q1)) + kpi('Q3', fu(S.q3)) + kpi('Asimetría', fmt(S.sk)) +
+    kpi('Datos atípicos', fmt(outs.length,0), 'fuera de ' + fmt(S.lo) + ' a ' + fmt(S.hi), outs.length ? 'warn' : '') +
+    '</div></div>';
+
+  var fuera = [], sinMeta = [];
+  if (isFinite(lim)) fuera = d.items.filter(function(it){ return menor ? it.v > lim : it.v < lim; });
+  if (isFinite(meta)) sinMeta = d.items.filter(function(it){ return menor ? it.v > meta : it.v < meta; });
+  if (isFinite(lim) || isFinite(meta)) {
+    var cumple = isFinite(meta) ? (menor ? S.mean <= meta : S.mean >= meta) : null;
+    h += '<div class="card"><h2>Cumplimiento frente al límite y la meta</h2><div class="grid">';
+    if (isFinite(lim)) {
+      h += kpi(menor ? 'Límite (máximo)' : 'Límite (mínimo)', fu(lim)) +
+           kpi('Registros fuera del límite', fmt(fuera.length,0) + ' de ' + fmt(S.n,0), fmt(fuera.length/S.n*100,1) + ' %', fuera.length ? 'bad' : '');
+    }
+    if (isFinite(meta)) {
+      h += kpi('Meta', fu(meta)) +
+           kpi('Registros que no logran la meta', fmt(sinMeta.length,0) + ' de ' + fmt(S.n,0), fmt(sinMeta.length/S.n*100,1) + ' %', sinMeta.length ? 'warn' : '') +
+           kpi('Brecha (media − meta)', fu(S.mean - meta)) +
+           kpi('¿La media cumple la meta?', cumple ? 'Sí' : 'No', '', cumple ? '' : 'bad');
+    }
+    h += '</div></div>';
+  }
+
+  h += '<div class="card"><h2>¿Cuánto cambian los lotes extremos al promedio?</h2>';
+  if (outs.length) {
+    var diff = S.mean - sp.meanClean, pct = sp.meanClean !== 0 ? diff / Math.abs(sp.meanClean) * 100 : NaN;
+    h += '<div class="grid">' +
+      kpi('Lotes extremos', fmt(outs.length,0) + ' de ' + fmt(S.n,0), fmt(outs.length/S.n*100,1) + ' % de los lotes', 'warn') +
+      kpi('Promedio con todos', fu(S.mean)) +
+      kpi('Promedio sin extremos', fu(sp.meanClean)) +
+      kpi('Cambio por los extremos', fu(diff), isFinite(pct) ? fmt(pct,1) + ' %' : '', 'bad') +
+      kpi('Mediana (no se mueve)', fu(S.med)) + '</div>';
+    h += '<p>Los <b>' + outs.length + '</b> lote(s) extremo(s) mueven el promedio de <b>' + fu(sp.meanClean) + '</b> a <b>' + fu(S.mean) + '</b>' +
+         (isFinite(pct) ? ' (' + fmt(Math.abs(pct),1) + ' % ' + (diff >= 0 ? 'más' : 'menos') + ')' : '') + '. Regla usada: Tukey (fuera de Q1 − 1,5·RIC y Q3 + 1,5·RIC).</p>';
+    var sorted = outs.slice().sort(function(a,b){ return Math.abs(b.v - S.med) - Math.abs(a.v - S.med); });
+    h += '<div class="tablewrap" style="max-height:260px"><table><thead><tr><th>Lote (fila)</th><th>Valor</th><th>Sentido</th></tr></thead><tbody>';
+    sorted.slice(0,40).forEach(function(o){
+      h += '<tr><td>' + o.i + '</td><td>' + fu(o.v) + '</td><td>' + (o.v > S.hi ? 'Alto' : 'Bajo') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+    if (sorted.length > 40) h += '<p class="muted">Se muestran los 40 más alejados de la mediana.</p>';
+  } else {
+    h += '<p>No hay datos atípicos con la regla de Tukey, así que el promedio no está siendo jalado por lotes extremos.</p>';
+  }
+  h += '</div>';
+
+  var L = [];
+  if (isFinite(meta)) {
+    var ok = menor ? S.mean <= meta : S.mean >= meta;
+    L.push(ok ? 'La media (' + fu(S.mean) + ') cumple la meta de ' + fu(meta) + '.' :
+                'La media (' + fu(S.mean) + ') no cumple la meta de ' + fu(meta) + ' (brecha de ' + fu(Math.abs(S.mean - meta)) + ').');
+  }
+  if (isFinite(lim)) L.push(fuera.length + ' de ' + S.n + ' registros (' + fmt(fuera.length/S.n*100,1) + ' %) están fuera del límite de ' + fu(lim) + '.');
+  var gap = S.mean - S.med;
+  if (Math.abs(gap) > 0.15 * Math.abs(S.med) && Math.abs(gap) > 1e-9) {
+    L.push('La media (' + fu(S.mean) + ') y la mediana (' + fu(S.med) + ') se separan: hay valores extremos que jalan el promedio hacia ' + (gap > 0 ? 'arriba' : 'abajo') + '.');
+  } else {
+    L.push('La media y la mediana son parecidas: los valores extremos pesan poco en el promedio.');
+  }
+  L.push(outs.length ? 'Hay ' + outs.length + ' dato(s) atípico(s). Investiga qué pasó en esos lotes.' : 'No hay datos atípicos con la regla de Tukey.');
+  if (isFinite(S.cv)) L.push('Variabilidad: CV = ' + fmt(S.cv,1) + ' % (' + (S.cv < 10 ? 'baja' : S.cv <= 30 ? 'moderada' : 'alta') + ').');
+  if (S.sk > 1) L.push('Asimetría positiva fuerte (' + fmt(S.sk) + '): hay una cola larga hacia valores altos.');
+  else if (S.sk < -1) L.push('Asimetría negativa fuerte (' + fmt(S.sk) + '): hay una cola larga hacia valores bajos.');
+  h += '<div class="card"><h2>Lectura automática</h2><ul>' + L.map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  el.innerHTML = h;
+}
+
+/* ---------- gráficos ---------- */
+function setupCanvas(c, H){
+  var W = c.parentElement.clientWidth || 320, dpr = window.devicePixelRatio || 1;
+  c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+  c.style.width = W + 'px'; c.style.height = H + 'px';
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  return { ctx:ctx, w:W, h:H };
+}
+function noData(ctx){
+  ctx.fillStyle = '#6b756b'; ctx.font = '14px system-ui, sans-serif';
+  ctx.fillText('Carga datos en la sección Datos para ver el gráfico.', 12, 40);
+}
+function drawHist(){
+  var c = $('cHist'), H = 300, o = setupCanvas(c, H), ctx = o.ctx, W = o.w;
+  var d = getData(), vals = d.items.map(function(it){ return it.v; });
+  if (vals.length < 2) { noData(ctx); return; }
+  var cfg = state.cfg, menor = cfg.mejor !== 'mayor', lim = num(cfg.limite), meta = num(cfg.meta);
+  var n = vals.length, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+  var k = Math.ceil(1 + Math.log2(n)), rng = (mx - mn) || 1, bw = rng / k, cnt = [];
+  for (var i = 0; i < k; i++) cnt.push(0);
+  vals.forEach(function(v){ var b = Math.min(k-1, Math.floor((v - mn)/bw)); cnt[b]++; });
+  var d0 = mn, d1 = Math.max(mx, mn + rng);
+  [lim, meta].forEach(function(x){ if (isFinite(x)) { d0 = Math.min(d0, x); d1 = Math.max(d1, x); } });
+  var pad = { l:44, r:14, t:22, b:48 }, pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  var maxC = Math.max.apply(null, cnt), ymax = maxC * 1.12;
+  function X(x){ return pad.l + (x - d0)/(d1 - d0) * pw; }
+  function Y(y){ return pad.t + ph - y/ymax*ph; }
+  ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+  var step = Math.max(1, Math.ceil(maxC / 5));
+  for (var v = 0; v <= maxC; v += step) {
+    ctx.strokeStyle = '#e6ebe0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(W - pad.r, Y(v)); ctx.stroke();
+    ctx.fillStyle = '#6b756b'; ctx.textAlign = 'right'; ctx.fillText(String(v), pad.l - 6, Y(v));
+  }
+  ctx.textAlign = 'left'; ctx.fillStyle = '#6b756b'; ctx.fillText('Frecuencia', 4, 8);
+  for (var b = 0; b < k; b++) {
+    var x0 = mn + b*bw, x1 = x0 + bw, bad = isFinite(lim) && (menor ? x0 >= lim : x1 <= lim);
+    var L = X(x0) + 1, R = X(x1) - 1;
+    ctx.fillStyle = bad ? '#e57373' : '#4caf50';
+    ctx.fillRect(L, Y(cnt[b]), Math.max(1, R - L), Y(0) - Y(cnt[b]));
+    if (cnt[b] > 0) { ctx.fillStyle = '#1f2a1f'; ctx.textAlign = 'center'; ctx.fillText(String(cnt[b]), (L + R)/2, Y(cnt[b]) - 8); }
+  }
+  ctx.strokeStyle = '#9aa59a'; ctx.beginPath(); ctx.moveTo(pad.l, Y(0)); ctx.lineTo(W - pad.r, Y(0)); ctx.stroke();
+  var dec = rng < 10 ? 2 : rng < 100 ? 1 : 0, skip = Math.max(1, Math.ceil(46 / (pw / k * (rng / (d1 - d0)))));
+  ctx.fillStyle = '#6b756b'; ctx.textAlign = 'center';
+  for (var e = 0; e <= k; e += skip) ctx.fillText(fmt(mn + e*bw, dec), X(mn + e*bw), Y(0) + 14);
+  var lines = [];
+  if (isFinite(lim)) lines.push({ x:lim, t:'Límite', c:'#c62828' });
+  if (isFinite(meta)) lines.push({ x:meta, t:'Meta', c:'#2e7d32' });
+  lines.sort(function(a,b){ return a.x - b.x; });
+  lines.forEach(function(ln, idx){
+    ctx.strokeStyle = ln.c; ctx.fillStyle = ln.c; ctx.lineWidth = 2; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(X(ln.x), pad.t); ctx.lineTo(X(ln.x), Y(0)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.textAlign = (lines.length > 1 && idx === 0) ? 'right' : 'left';
+    ctx.fillText(ln.t, X(ln.x) + (ctx.textAlign === 'right' ? -4 : 4), pad.t - 8);
+  });
+  ctx.lineWidth = 1; ctx.fillStyle = '#1f2a1f'; ctx.textAlign = 'center';
+  ctx.fillText((cfg.variable || 'Valor') + (cfg.unidad ? ' (' + cfg.unidad + ')' : ''), pad.l + pw/2, H - 10);
+}
+function drawControl(){
+  var c = $('cCtrl'), H = 300, o = setupCanvas(c, H), ctx = o.ctx, W = o.w;
+  var d = getData(), items = d.items;
+  if (items.length < 2) { noData(ctx); return; }
+  var cfg = state.cfg, lim = num(cfg.limite), meta = num(cfg.meta);
+  var vals = items.map(function(it){ return it.v; }), S = stats(vals), n = vals.length;
+  var y0 = Math.min(0, S.min), y1 = S.max;
+  [lim, meta].forEach(function(x){ if (isFinite(x)) { y0 = Math.min(y0, x); y1 = Math.max(y1, x); } });
+  if (y1 === y0) y1 = y0 + 1;
+  y1 = y1 + (y1 - y0) * 0.08;
+  var pad = { l:48, r:14, t:14, b:44 }, pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+  function X(i){ return pad.l + (n === 1 ? 0 : i/(n-1)) * pw; }
+  function Y(v){ return pad.t + ph - (v - y0)/(y1 - y0) * ph; }
+  var dec = (y1 - y0) < 10 ? 1 : 0;
+  ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+  for (var t = 0; t <= 5; t++) {
+    var v = y0 + (y1 - y0) * t / 5;
+    ctx.strokeStyle = '#e6ebe0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(W - pad.r, Y(v)); ctx.stroke();
+    ctx.fillStyle = '#6b756b'; ctx.textAlign = 'right'; ctx.fillText(fmt(v, dec), pad.l - 6, Y(v));
+  }
+  function hline(v, col, dash){
+    ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(W - pad.r, Y(v)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  hline(S.mean, '#6b756b', [3,3]);
+  if (isFinite(meta)) hline(meta, '#2e7d32', [7,4]);
+  if (isFinite(lim)) hline(lim, '#c62828', [7,4]);
+  ctx.strokeStyle = '#a5c9a5'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  vals.forEach(function(v, i){ if (i === 0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v)); });
+  ctx.stroke();
+  var menor = cfg.mejor !== 'mayor', r = n <= 120 ? 3.5 : n <= 400 ? 2 : 1.2;
+  vals.forEach(function(v, i){
+    var isOut = v < S.lo || v > S.hi;
+    var over = isFinite(lim) && (menor ? v > lim : v < lim);
+    ctx.fillStyle = isOut ? '#c62828' : over ? '#f2a900' : '#2e7d32';
+    ctx.beginPath(); ctx.arc(X(i), Y(v), isOut ? r + 1.5 : r, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle = '#6b756b'; ctx.textAlign = 'center';
+  var every = Math.max(1, Math.ceil(n / 6));
+  for (var i = 0; i < n; i += every) ctx.fillText(String(items[i].i), X(i), pad.t + ph + 14);
+  ctx.fillText(String(items[n-1].i), X(n-1), pad.t + ph + 14);
+  ctx.fillStyle = '#1f2a1f';
+  ctx.fillText('Número de lote (orden en que se tomaron)', pad.l + pw/2, H - 10);
+}
+function drawCharts(){
+  var biz = !!detectBusiness();
+  $('grafBiz').style.display = biz ? 'block' : 'none';
+  $('grafMerma').style.display = biz ? 'none' : 'block';
+  if (!biz) { drawHist(); drawControl(); }
+}
+
+/* ---------- recomendaciones ---------- */
+function renderRecs(){
+  var el = $('recOut');
+  if (detectBusiness()) {
+    el.innerHTML = '<div class="card"><h2>Recomendaciones</h2><p>Esta sección está pensada para la merma por lote. Con datos de ventas y costos por mes, los resultados y sus explicaciones están en <b>Estadística</b>.</p><button class="btn" data-go="estadistica" type="button">Ir a Estadística</button></div>';
+    return;
+  }
+  var d = getData();
+  if (d.items.length < 2) { el.innerHTML = emptyMsg(); return; }
+  var c = state.cfg, vals = d.items.map(function(it){ return it.v; }), S = stats(vals), n = S.n;
+  var lim = num(c.limite), meta = num(c.meta), menor = c.mejor !== 'mayor';
+  var sp = split(d, S), outs = sp.outs.slice().sort(function(a,b){ return a.i - b.i; });
+  var Sc = sp.clean.length >= 2 ? stats(sp.clean) : null;
+  var bad = function(v, ref){ return menor ? v > ref : v < ref; };
+  var fuera = isFinite(lim) ? vals.filter(function(v){ return bad(v, lim); }).length : 0;
+  var sobreMeta = isFinite(meta) ? vals.filter(function(v){ return bad(v, meta); }).length : 0;
+  var h = '';
+
+  var ne = parseInt(c.nEsp, 10);
+  if (d.invalid.length || (ne && parsed.rows.length !== ne)) {
+    h += '<div class="card"><h2>Primero: revisa la calidad de los datos</h2>';
+    if (d.invalid.length) h += alertInvalid(d);
+    if (ne && parsed.rows.length !== ne) {
+      h += '<div class="alert warn">La ficha indica <b>' + ne + '</b> registros, pero el archivo trae <b>' + parsed.rows.length + '</b>. Confirma que cargaste el archivo y la columna correctos antes de sacar conclusiones.</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div class="card"><h2>Diagnóstico</h2><p>';
+  if (isFinite(meta)) {
+    var ok = menor ? S.mean <= meta : S.mean >= meta;
+    h += 'La media es <b>' + fu(S.mean) + '</b> y ' + (ok ? 'cumple' : '<b>no cumple</b>') + ' la meta de ' + fu(meta) + '. ';
+  }
+  h += 'La mediana es <b>' + fu(S.med) + '</b>. ';
+  if (outs.length) h += 'Hay <b>' + outs.length + '</b> lote(s) extremo(s) que mueven el promedio de ' + fu(sp.meanClean) + ' a ' + fu(S.mean) + '.';
+  else h += 'No hay lotes extremos con la regla de Tukey.';
+  h += '</p></div>';
+
+  h += '<div class="card"><h2>Cómo investigar la causa de los lotes extremos</h2><ol>';
+  if (outs.length) {
+    var consec = outs.some(function(o, k){ return k > 0 && o.i - outs[k-1].i === 1; });
+    var lots = outs.slice(0,15).map(function(o){ return o.i; }).join(', ') + (outs.length > 15 ? '…' : '');
+    h += '<li><b>Identificar:</b> los lotes extremos son los de las filas ' + lots + '.' +
+         (consec ? ' Hay extremos <b>consecutivos</b>: sugiere una causa que dura un periodo (un turno, un proveedor de leche, una falla de equipo).'
+                 : ' Están <b>separados</b> entre sí: sugiere causas ocasionales (un error puntual, una falla aislada).') + '</li>';
+  } else {
+    h += '<li><b>Identificar:</b> con estos datos no hay extremos; vigila los lotes que superen el límite' + (isFinite(lim) ? ' de ' + fu(lim) : '') + '.</li>';
+  }
+  h += '<li><b>Revisar el registro de cada lote extremo:</b> fecha, turno, operario, proveedor de la leche, temperatura y tiempo de pasteurización, equipo usado.</li>' +
+       '<li><b>Comparar extremos contra lotes normales</b> con la lista de causas (6M):' +
+       '<ul><li>Materia prima: proveedor, acidez y temperatura de recepción de la leche.</li>' +
+       '<li>Máquina: pasteurizador, mantenimiento, fugas, limpieza CIP.</li>' +
+       '<li>Método: tiempo y temperatura de pasteurización, tiempos de espera entre etapas.</li>' +
+       '<li>Mano de obra: turno, operario, capacitación.</li>' +
+       '<li>Medición: calibración de termómetros y medidores de volumen, errores de registro.</li>' +
+       '<li>Medio ambiente: temperatura ambiente, cadena de frío, tiempos de transporte.</li></ul></li>' +
+       '<li><b>Confirmar la hipótesis con datos:</b> agrega columnas (turno, proveedor, temperatura) al CSV y revisa si los extremos se concentran en un grupo.</li>' +
+       '<li><b>Corregir y verificar:</b> aplica una acción y mide los siguientes lotes en el gráfico de control para ver si desaparecen los extremos.</li></ol></div>';
+
+  h += '<div class="card"><h2>Alternativas de mejora justificadas con tus datos</h2>';
+  if (outs.length) {
+    var diff = S.mean - sp.meanClean;
+    var cumpleSin = isFinite(meta) ? (menor ? sp.meanClean <= meta : sp.meanClean >= meta) : null;
+    h += '<div class="alt"><h3>A. Atacar la causa de los lotes extremos</h3>' +
+         '<p>Son ' + outs.length + ' de ' + n + ' lotes (' + fmt(outs.length/n*100,1) + ' %), pero mueven la media ' + fu(Math.abs(diff)) + '. ' +
+         'Sin ellos el promedio sería ' + fu(sp.meanClean) + (cumpleSin === null ? '.' : cumpleSin ? ', que <b>sí cumple</b> la meta de ' + fu(meta) + '.' : ', que aún no cumple la meta de ' + fu(meta) + '.') + '</p>' +
+         '<p>Acción: investigar esos lotes con la lista de arriba y corregir la causa más frecuente.</p></div>';
+  }
+  if (Sc) {
+    h += '<div class="alt"><h3>' + (outs.length ? 'B' : 'A') + '. Reducir la variabilidad y centrar el proceso</h3>' +
+         '<p>La desviación típica es ' + fu(S.sd) + ' (CV ' + fmt(S.cv,1) + ' %)' + (outs.length ? ' y sin extremos baja a ' + fu(Sc.sd) : '') + '. ' +
+         (isFinite(meta) ? sobreMeta + ' de ' + n + ' lotes (' + fmt(sobreMeta/n*100,1) + ' %) no logran la meta de ' + fu(meta) + '. ' : '') + '</p>' +
+         '<p>Acción: estandarizar tiempo y temperatura de pasteurización y el método de trabajo entre turnos.</p></div>';
+  }
+  var pares = 0;
+  if (isFinite(meta)) for (var j = 1; j < vals.length; j++) { if (bad(vals[j], meta) && bad(vals[j-1], meta)) pares++; }
+  h += '<div class="alt"><h3>' + String.fromCharCode(65 + (outs.length ? 1 : 0) + (Sc ? 1 : 0)) + '. Alerta temprana con gráfico de control</h3>' +
+       '<p>' + (isFinite(lim) ? fuera + ' lotes superaron el límite de ' + fu(lim) + '. ' : '') +
+       (isFinite(meta) ? 'Hubo ' + pares + ' caso(s) de dos lotes seguidos sin lograr la meta. ' : '') + '</p>' +
+       '<p>Acción: mostrar al operario el gráfico de control en planta y avisar cuando un lote pase el límite o cuando haya dos seguidos fuera de la meta.</p></div>';
+  if (d.invalid.length) {
+    h += '<div class="alt"><h3>Validar los datos al cargarlos</h3><p>Se encontraron ' + d.invalid.length + ' valores imposibles. Una validación automática (rechazar negativos, mayores de 100 % o valores como 65535) evita conclusiones falsas.</p></div>';
+  }
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+/* ---------- pantalla de datos ---------- */
+function renderTable(){
+  var w = $('tabla');
+  if (!parsed.rows.length) { w.innerHTML = '<p class="muted" style="padding:10px">La tabla aparecerá aquí cuando cargues datos.</p>'; return; }
+  var max = 2000, rows = parsed.rows.slice(0, max);
+  var h = '<table><thead><tr><th>#</th>' + parsed.headers.map(function(x, j){ return '<th class="' + (j === state.col ? 'sel' : '') + '">' + esc(x) + '</th>'; }).join('') + '</tr></thead><tbody>';
+  rows.forEach(function(r, i){
+    h += '<tr><td class="idx">' + (i+1) + '</td>';
+    for (var j = 0; j < parsed.headers.length; j++) {
+      var t = r[j] == null ? '' : r[j], cls = (j === state.col ? 'sel' : '');
+      if (j === state.col) { var v = cellNum(t, parsed.delim); if (isFinite(v) && isInvalid(v)) cls += ' bad'; }
+      h += '<td class="' + cls + '">' + esc(t) + '</td>';
+    }
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  if (parsed.rows.length > max) h += '<p class="muted" style="padding:8px">Se muestran las primeras ' + max + ' filas de ' + parsed.rows.length + '.</p>';
+  w.innerHTML = h;
+}
+function renderInfo(){
+  var el = $('info'), h = '';
+  if (!state.raw.trim()) { el.innerHTML = '<div class="alert warn">Aún no hay datos. Carga un CSV, pega los valores o usa el ejemplo.</div>'; return; }
+  if (!parsed.rows.length || state.col < 0) {
+    el.innerHTML = '<div class="alert bad">No encontré una columna numérica. Revisa que el archivo tenga los valores y que los decimales usen punto o coma.</div>'; return;
+  }
+  var biz = detectBusiness();
+  if (biz) {
+    el.innerHTML = '<div class="alert"><b>Datos de negocio detectados:</b> ' + biz.ventas.length + ' meses (' + esc(biz.mes[0]) + ' a ' + esc(biz.mes[biz.mes.length - 1]) + '). Ve a <b>Estadística</b> para ver los resultados.</div>';
+    return;
+  }
+  var d = getData();
+  h += '<div class="alert"><b>' + parsed.rows.length + ' filas</b> leídas. Columna analizada: <b>' + esc(parsed.headers[state.col]) + '</b> (' + d.items.length + ' valores usados' + (d.nonNum ? ', ' + d.nonNum + ' sin número' : '') + ').</div>';
+  if (d.invalid.length) h += alertInvalid(d);
+  var ne = parseInt(state.cfg.nEsp, 10);
+  if (ne && parsed.rows.length !== ne) h += '<div class="alert warn">Tu ficha indica <b>' + ne + '</b> registros, pero el archivo trae <b>' + parsed.rows.length + '</b>. Confirma que es el archivo correcto.</div>';
+  el.innerHTML = h;
+}
+function fillSelCol(){
+  var s = $('selCol');
+  if (!parsed.numCols.length) { s.innerHTML = '<option>(sin columnas numéricas)</option>'; s.disabled = true; return; }
+  s.disabled = false;
+  s.innerHTML = parsed.numCols.map(function(j){ return '<option value="' + j + '"' + (j === state.col ? ' selected' : '') + '>' + esc(parsed.headers[j]) + '</option>'; }).join('');
+}
+function process(){
+  parsed = parseCSV(state.raw || '');
+  state.col = pickCol();
+  fillSelCol(); renderTable(); renderInfo(); save();
+}
+function applyCfgToHeader(){
+  $('hEmpresa').textContent = state.cfg.empresa || 'Análisis estadístico';
+  var sub = [state.cfg.variable, state.cfg.proceso].filter(Boolean).join(' · ');
+  $('hSub').textContent = sub || 'Análisis estadístico';
+  document.title = (state.cfg.empresa || 'Campo Verde') + ' · Análisis estadístico';
+}
+function cfgToInputs(){
+  var c = state.cfg;
+  $('cfgEmpresa').value = c.empresa; $('cfgSector').value = c.sector; $('cfgProceso').value = c.proceso;
+  $('cfgVariable').value = c.variable; $('cfgUnidad').value = c.unidad; $('cfgMejor').value = c.mejor;
+  $('cfgLimite').value = c.limite; $('cfgMeta').value = c.meta; $('cfgNEsp').value = c.nEsp; $('cfgExcluir').checked = !!c.excluir;
+}
+function bindCfg(id, key, isCheck){
+  var el = $(id);
+  var fn = function(){
+    state.cfg[key] = isCheck ? el.checked : el.value;
+    applyCfgToHeader();
+    renderInfo(); renderTable(); save();
+  };
+  el.addEventListener('input', fn);
+  el.addEventListener('change', fn);
+}
+
+/* ---------- menú ---------- */
+function show(sec){
+  document.querySelectorAll('.sec').forEach(function(s){ s.classList.toggle('on', s.id === sec); });
+  document.querySelectorAll('#menu button').forEach(function(b){ b.classList.toggle('on', b.dataset.sec === sec); });
+  if (sec === 'estadistica') renderStats();
+  else if (sec === 'graficos') drawCharts();
+  else if (sec === 'recomendaciones') renderRecs();
+  window.scrollTo(0, 0);
+}
+function currentSec(){
+  var s = document.querySelector('.sec.on'); return s ? s.id : 'datos';
+}
+
+/* ---------- eventos ---------- */
+function init(){
+  load();
+  cfgToInputs(); applyCfgToHeader();
+  bindCfg('cfgEmpresa','empresa'); bindCfg('cfgSector','sector'); bindCfg('cfgProceso','proceso');
+  bindCfg('cfgVariable','variable'); bindCfg('cfgUnidad','unidad'); bindCfg('cfgMejor','mejor');
+  bindCfg('cfgLimite','limite'); bindCfg('cfgMeta','meta'); bindCfg('cfgNEsp','nEsp'); bindCfg('cfgExcluir','excluir', true);
+  $('txt').value = state.raw;
+  process();
+
+  document.querySelectorAll('#menu button').forEach(function(b){
+    b.addEventListener('click', function(){ show(b.dataset.sec); });
+  });
+  document.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('[data-go]') : null;
+    if (t) show(t.dataset.go);
+  });
+  $('btnUsar').addEventListener('click', function(){
+    state.raw = $('txt').value; state.col = -1; process();
+  });
+  $('btnEjemplo').addEventListener('click', function(){
+    var t = 'lote,merma_pct\n' + EJEMPLO_VALORES.map(function(v, i){ return (i+1) + ',' + v; }).join('\n');
+    $('txt').value = t; state.raw = t; state.col = -1; process();
+  });
+  $('btnBorrar').addEventListener('click', function(){
+    $('txt').value = ''; state.raw = ''; state.col = -1; process();
+  });
+  $('file').addEventListener('change', function(ev){
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){ var t = String(r.result || '').replace(/^\uFEFF/, ''); $('txt').value = t; state.raw = t; state.col = -1; process(); };
+    r.readAsText(f);
+    ev.target.value = '';
+  });
+  $('selCol').addEventListener('change', function(){
+    state.col = parseInt($('selCol').value, 10); renderTable(); renderInfo(); save();
+  });
+  $('btnCopiar').addEventListener('click', function(){
+    var txt = $('recOut').innerText || $('recOut').textContent;
+    var b = $('btnCopiar');
+    function ok(){ b.textContent = '¡Copiado!'; setTimeout(function(){ b.textContent = 'Copiar recomendaciones'; }, 1500); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){});
+      else { var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }
+    } catch(e){}
+  });
+  var rt;
+  window.addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){ if (currentSec() === 'graficos') drawCharts(); }, 150);
+  });
+}
+init();
+})();
+</script>
+</body>
+</html>
